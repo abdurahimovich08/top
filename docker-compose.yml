@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: top
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/top
+      JWT_SECRET: super-secret-development-key
+      JWT_EXPIRES_IN: 1d
+      OTP_TTL: 300
+      CORS_ORIGINS: http://localhost:3000
+    volumes:
+      - ./backend:/app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+volumes:
+  postgres-data:
